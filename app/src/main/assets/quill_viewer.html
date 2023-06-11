@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quill Editor</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            position: relative;
+            min-height: calc(100% - 50px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            /* Adjust this value to match your footer's height */
+        }
+    </style>
+
+    <link rel="stylesheet" href="styles/snow.css">
+    <link rel="stylesheet" href="styles/stackoverflow-dark.css">
+    <script src="scripts/highlight.js"></script>
+    <script src="scripts/quill.js"></script>
+</head>
+
+<body>
+    <div class="container" id="editor-container"></div>
+</body>
+<script src="./scripts/base64.min.js"></script>
+<script>
+    var QE = {};
+    QE.isCursorOnEditor = false;
+    QE.editor = document.getElementById('editor-container');
+
+    var quill = new Quill('#editor-container', {
+        modules: {
+            syntax: true,
+            toolbar: false
+        },
+        placeholder: 'Note is empty',
+        theme: 'snow'
+    });
+
+    quill.disable();
+    // set html content
+    QE.setHTML = (html) => {
+        quill.setContents(JSON.parse(Base64.decode(html)), 'silent');
+    };
+
+    //QE.setHTML(`eyJvcHMiOlt7Imluc2VydCI6ImhlbGxvIFxud29ybGQgXG5cbvCfpZXwn42P8J+agPCfjI7wn5KyLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uXG4ifV19`);
+</script>
+
+</html>

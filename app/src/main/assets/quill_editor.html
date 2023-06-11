@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Quill Editor</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      position: relative;
+      min-height: calc(100% - 50px);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      /* Adjust this value to match your footer's height */
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 50px;
+      /* Adjust this value to match your footer's height */
+      background-color: #ebebeb;
+    }
+
+    div.scrollmenu {
+      background-color: #333;
+      overflow: auto;
+      white-space: nowrap;
+    }
+
+    .icon-container {
+      display: flex;
+      overflow-x: scroll;
+      white-space: nowrap;
+    }
+
+    .icon-container .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      /* Adjust the width as needed */
+      height: 50px;
+      /* Adjust the height as needed */
+      font-size: 24px;
+      padding-right: 16px;
+      padding-left: 16px;
+      -webkit-user-select: none;
+      /* Disable text selection for Safari */
+      -moz-user-select: none;
+      /* Disable text selection for Firefox */
+      -ms-user-select: none;
+      /* Disable text selection for Internet Explorer/Edge */
+      user-select: none;
+      /* Disable text selection for standard browsers */
+    }
+
+    .icon-mini {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      /* Adjust the width as needed */
+      height: 30px;
+      /* Adjust the height as needed */
+      font-size: 16px;
+      /* Adjust the font size as needed */
+      margin-right: 10px;
+      margin-left: 10px;
+      /* Adjust the spacing between icons as needed */
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      /* Adjust the width as needed */
+      height: 100%;
+      background-color: rgba(173, 173, 173, 0.5);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .animated-scroll-indicator {
+      transition: transform 0.3s ease-out;
+    }
+
+    .animated-scroll-indicator-hidden {
+      transform: translateX(100%);
+    }
+
+    .tippy-box[data-animation=scale-subtle][data-placement^=top] {
+      transform-origin: bottom
+    }
+
+    .tippy-box[data-animation=scale-subtle][data-placement^=bottom] {
+      transform-origin: top
+    }
+
+    .tippy-box[data-animation=scale-subtle][data-placement^=left] {
+      transform-origin: right
+    }
+
+    .tippy-box[data-animation=scale-subtle][data-placement^=right] {
+      transform-origin: left
+    }
+
+    .tippy-box[data-animation=scale-subtle][data-state=hidden] {
+      transform: scale(.8);
+      opacity: 0
+    }
+
+    .slide-in {
+      opacity: 0;
+      transform: translateY(100%);
+      transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    }
+
+    .slide-in.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hidden {
+      opacity: 0;
+    }
+
+    .rotate-90 {
+      transform: rotate(180deg);
+    }
+
+    .tippy-box {
+      background-color: #ebebeb !important;
+      padding: 0px !important;
+      border-radius: 25px;
+    }
+
+    .tippy-content {
+      background-color: #ebebeb !important;
+      padding: 0px !important;
+      border-radius: 25px;
+    }
+  </style>
+
+  <link rel="stylesheet" href="styles/snow.css">
+  <link rel="stylesheet" href="styles/stackoverflow-dark.css">
+  <script src="scripts/highlight.js"></script>
+  <script src="scripts/quill.js"></script>
+  <script src="scripts/popper.min.js"></script>
+  <script src="scripts/tippy.min.js"></script>
+</head>
+
+<body>
+  <div class="container" id="editor-container"></div>
+  <div class="footer slide-in hidden">
+    <!-- Your footer content here -->
+    <div class="icon-container" id="options" onScroll="handleOnScroll(event);">
+      <div class="icon" id="checkboxListOption" onclick="QE.setCheckbox()">
+        <span class="material-symbols-rounded rotate-90 checkbox-list-icon"
+          style="color:rgb(153, 153, 153);font-size: 36px;">
+          event_list
+        </span>
+      </div>
+      <div class="icon" id="headerLevelsOptions">
+        <span class="material-symbols-rounded header-levels-options-icon"
+          style="color:rgb(153, 153, 153);font-size: 36px;">
+          match_case
+        </span>
+      </div>
+      <div class="icon exclude-button" onclick="QE.setBold()">
+        <span class="material-symbols-rounded bold-icon" style="color:rgb(153, 153, 153)">
+          format_bold
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setItalic()">
+        <span class="material-symbols-rounded italic-icon" style="color:rgb(153, 153, 153)">
+          format_italic
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setStrike()">
+        <span class="material-symbols-rounded strikethrough-icon" style="color:rgb(153, 153, 153)">
+          strikethrough_s
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setUnderline()">
+        <span class="material-symbols-rounded underline-icon" style="color:rgb(153, 153, 153)">
+          format_underlined
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setSuperscript()">
+        <span class="material-symbols-rounded superscript-icon" style="color:rgb(153, 153, 153)">
+          superscript
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setSubscript()">
+        <span class="material-symbols-rounded subscript-icon" style="color:rgb(153, 153, 153)">
+          subscript
+        </span>
+      </div>
+      <div class="icon" onclick="QE.clearSelection()">
+        <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+          format_clear
+        </span>
+      </div>
+      <div class="icon" id="textHighlightOptions">
+        <span class="material-symbols-rounded text-highlight-icon" style="color:rgb(153, 153, 153)">
+          format_ink_highlighter
+        </span>
+      </div>
+      <div class="icon" id="textColorOptions">
+        <span class="material-symbols-rounded text-color-icon" style="color:rgb(153, 153, 153)">
+          format_color_text
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setBlockQuote()">
+        <span class="material-symbols-rounded blockquote-icon" style="color:rgb(153, 153, 153)">
+          format_quote
+        </span>
+      </div>
+      <div class="icon" onclick="QE.setCodeBlock()">
+        <span class="material-symbols-rounded codeblock-icon" style="color:rgb(153, 153, 153)">
+          code
+        </span>
+      </div>
+      <div class="icon" onclick="">
+        <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+          format_indent_increase
+        </span>
+      </div>
+      <div class="icon" onclick="">
+        <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+          format_indent_decrease
+        </span>
+      </div>
+      <div class="icon">
+      </div>
+      <!-- Add more icons here -->
+    </div>
+
+    <div class="scroll-indicator animated-scroll-indicator" onclick="scrollToEnd(event)">
+      <span class="material-symbols-rounded" style="color:rgb(240, 255, 203)">
+        chevron_right
+      </span>
+    </div>
+  </div>
+
+  <!-- Tippy html content START -->
+  <div id="tippy-text-color-options"
+    style="height:50px;display: flex;justify-content: center;align-items: center;margin-left: 8px;margin-right: 8px;">
+    <div class="btn btn-click" onclick="QE.setTextColor('#FBD603')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #FBD603; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setTextColor('#ff3300')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #ff3300; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setTextColor('#4768d1')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #4768d1; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setTextColor('#00cc66')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #00cc66; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setTextColor('#000000')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #000000; margin:8px"></div>
+  </div>
+
+  <div id="tippy-highlight-color-options"
+    style="height:50px;display: flex;justify-content: center;align-items: center;margin-left: 8px;margin-right: 8px;">
+    <div class="btn btn-click" onclick="QE.setHighlightColor('#7aff7a')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #7aff7a; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setHighlightColor('#66ffff')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #66ffff; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setHighlightColor('#ffff77')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #ffff77; margin:8px"></div>
+    <div class="btn btn-click" onclick="QE.setHighlightColor('#f692ff')"
+      style="border-radius: 50%;  width: 40px;  height: 40px; background-color: #f692ff; margin:8px"></div>
+  </div>
+
+  <div id="tippy-header-levels" style="height:40px;display: flex;justify-content: center;align-items: center;">
+    <div class="icon-mini" onclick="QE.setHeader(false,'match_case')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        match_case
+      </span>
+    </div>
+    <div class="icon-mini" onclick="QE.setHeader(1,'format_h1')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        format_h1
+      </span>
+    </div>
+    <div class="icon-mini" onclick="QE.setHeader(2,'format_h2')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        format_h2
+      </span>
+    </div>
+    <div class="icon-mini" onclick="QE.setHeader(3,'format_h3')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        format_h3
+      </span>
+    </div>
+    <div class="icon-mini" onclick="QE.setHeader(4,'format_h4')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        format_h4
+      </span>
+    </div>
+    <div class="icon-mini" onclick="QE.setHeader(5,'format_h5')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        format_h5
+      </span>
+    </div>
+    <div class="icon-mini" onclick="QE.setHeader(6,'format_h6')">
+      <span class="material-symbols-rounded" style="color:rgb(153, 153, 153)">
+        format_h6
+      </span>
+    </div>
+  </div>
+  <!-- Tippy html content END -->
+
+</body>
+<script src="./scripts/base64.min.js"></script>
+<script src="scripts/customhandlers.js"></script>
+
+</html>
